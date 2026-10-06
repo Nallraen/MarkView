@@ -41,6 +41,14 @@ jobs:
           Copy-Item LICENSE.md, THIRD-PARTY-NOTICES.md dist/
 
       - name: Create GitHub release
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" dist/* --title "MarkView ${{ github.ref_name }}" --generate-notes
+        run: |
+          # A release published by hand for this tag is left untouched.
+          gh release view "${{ github.ref_name }}" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Output "Release ${{ github.ref_name }} already exists: nothing to do."
+            exit 0
+          }
+          gh release create "${{ github.ref_name }}" (Get-ChildItem dist).FullName --title "MarkView ${{ github.ref_name }}" --generate-notes
