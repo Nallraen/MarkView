@@ -1,0 +1,304 @@
+<Window x:Class="MarkView.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:c="clr-namespace:MarkView.Controls"
+        xmlns:m="clr-namespace:MarkView.Models"
+        xmlns:v="clr-namespace:MarkView.Views"
+        xmlns:vm="clr-namespace:MarkView.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="{Binding WindowTitle}"
+        Icon="pack://application:,,,/MarkView;component/Assets/MarkView.ico"
+        Width="1200" Height="800" MinWidth="480" MinHeight="320" FontSize="13"
+        Background="{DynamicResource Brush.Background}"
+        Foreground="{DynamicResource Brush.Foreground}"
+        AllowDrop="True">
+    <Window.Resources>
+        <v:EnumEqualsConverter x:Key="EnumEquals" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style x:Key="IconText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{DynamicResource Font.Icons}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Semibold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Window.Resources>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Find" Executed="OnFind" />
+        <CommandBinding Command="ApplicationCommands.Replace" Executed="OnReplace" />
+        <CommandBinding Command="{x:Static v:MainWindow.FindNextCommand}" Executed="OnFindNext" />
+        <CommandBinding Command="{x:Static v:MainWindow.FindPreviousCommand}" Executed="OnFindPrevious" />
+    </Window.CommandBindings>
+
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewDocumentCommand}" />
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}" />
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
+        <KeyBinding Key="S" Modifiers="Ctrl+Shift" Command="{Binding SaveAsCommand}" />
+        <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding CloseDocumentCommand}" />
+        <KeyBinding Key="F4" Modifiers="Ctrl" Command="{Binding CloseDocumentCommand}" />
+        <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding PrintCommand}" />
+        <KeyBinding Key="F" Modifiers="Ctrl" Command="ApplicationCommands.Find" />
+        <KeyBinding Key="H" Modifiers="Ctrl" Command="ApplicationCommands.Replace" />
+        <KeyBinding Key="F3" Command="{x:Static v:MainWindow.FindNextCommand}" />
+        <KeyBinding Key="F3" Modifiers="Shift" Command="{x:Static v:MainWindow.FindPreviousCommand}" />
+        <KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.SideBySide}" />
+        <KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.EditorOnly}" />
+        <KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.PreviewOnly}" />
+        <KeyBinding Key="NumPad1" Modifiers="Ctrl" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.SideBySide}" />
+        <KeyBinding Key="NumPad2" Modifiers="Ctrl" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.EditorOnly}" />
+        <KeyBinding Key="NumPad3" Modifiers="Ctrl" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.PreviewOnly}" />
+        <KeyBinding Key="OemPlus" Modifiers="Ctrl" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Key="Add" Modifiers="Ctrl" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Key="OemMinus" Modifiers="Ctrl" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Key="Subtract" Modifiers="Ctrl" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Key="D0" Modifiers="Ctrl" Command="{Binding ZoomResetCommand}" />
+        <KeyBinding Key="NumPad0" Modifiers="Ctrl" Command="{Binding ZoomResetCommand}" />
+        <KeyBinding Key="Tab" Modifiers="Ctrl" Command="{Binding NextTabCommand}" />
+        <KeyBinding Key="Tab" Modifiers="Ctrl+Shift" Command="{Binding PreviousTabCommand}" />
+        <KeyBinding Key="F11" Command="{Binding ToggleFullScreenCommand}" />
+        <!-- Formatting shortcuts are registered in code-behind (AltGr-safe gestures, target = editor). -->
+    </Window.InputBindings>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Fichier">
+                <MenuItem Header="_Nouveau" Command="{Binding NewDocumentCommand}" InputGestureText="Ctrl+N" />
+                <MenuItem Header="_Ouvrir…" Command="{Binding OpenCommand}" InputGestureText="Ctrl+O" />
+                <MenuItem Header="Fichiers _récents" ItemsSource="{Binding RecentFiles}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                            <Setter Property="Header" Value="{Binding}" />
+                            <Setter Property="Command" Value="{Binding DataContext.OpenRecentCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            <Setter Property="CommandParameter" Value="{Binding}" />
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                <MenuItem Header="Effacer les fichiers récents" Command="{Binding ClearRecentCommand}" />
+                <Separator />
+                <MenuItem Header="_Enregistrer" Command="{Binding SaveCommand}" InputGestureText="Ctrl+S" />
+                <MenuItem Header="Enregistrer _sous…" Command="{Binding SaveAsCommand}" InputGestureText="Ctrl+Maj+S" />
+                <Separator />
+                <MenuItem Header="Exporter en _HTML…" Command="{Binding ExportHtmlCommand}" />
+                <MenuItem Header="Exporter en P_DF…" Command="{Binding ExportPdfCommand}" />
+                <MenuItem Header="_Copier en HTML" Command="{Binding CopyHtmlCommand}" />
+                <MenuItem Header="_Imprimer…" Command="{Binding PrintCommand}" InputGestureText="Ctrl+P" />
+                <Separator />
+                <MenuItem Header="_Fermer" Command="{Binding CloseDocumentCommand}" InputGestureText="Ctrl+W" />
+                <MenuItem Header="Fermer _tout" Command="{Binding CloseAllCommand}" />
+                <Separator />
+                <MenuItem Header="_Quitter" Click="OnExitClick" InputGestureText="Alt+F4" />
+            </MenuItem>
+            <MenuItem Header="_Édition">
+                <MenuItem Header="_Annuler" Command="ApplicationCommands.Undo" InputGestureText="Ctrl+Z" />
+                <MenuItem Header="_Rétablir" Command="ApplicationCommands.Redo" InputGestureText="Ctrl+Y" />
+                <Separator />
+                <MenuItem Header="Co_uper" Command="ApplicationCommands.Cut" InputGestureText="Ctrl+X" />
+                <MenuItem Header="_Copier" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C" />
+                <MenuItem Header="C_oller" Command="ApplicationCommands.Paste" InputGestureText="Ctrl+V" />
+                <MenuItem Header="_Tout sélectionner" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A" />
+                <Separator />
+                <MenuItem Header="_Rechercher…" Command="ApplicationCommands.Find" InputGestureText="Ctrl+F" />
+                <MenuItem Header="R_emplacer…" Command="ApplicationCommands.Replace" InputGestureText="Ctrl+H" />
+                <MenuItem Header="Occurrence _suivante" Command="{x:Static v:MainWindow.FindNextCommand}" InputGestureText="F3" />
+                <MenuItem Header="Occurrence _précédente" Command="{x:Static v:MainWindow.FindPreviousCommand}" InputGestureText="Maj+F3" />
+            </MenuItem>
+            <MenuItem Header="F_ormat">
+                <MenuItem Header="_Gras" Command="{x:Static c:EditorCommands.Bold}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+B" />
+                <MenuItem Header="_Italique" Command="{x:Static c:EditorCommands.Italic}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+I" />
+                <MenuItem Header="_Barré" Command="{x:Static c:EditorCommands.Strikethrough}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Maj+X" />
+                <MenuItem Header="_Code inline" Command="{x:Static c:EditorCommands.InlineCode}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+E" />
+                <Separator />
+                <MenuItem Header="Titre _1" Command="{x:Static c:EditorCommands.Heading1}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Alt+1" />
+                <MenuItem Header="Titre _2" Command="{x:Static c:EditorCommands.Heading2}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Alt+2" />
+                <MenuItem Header="Titre _3" Command="{x:Static c:EditorCommands.Heading3}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Alt+3" />
+                <Separator />
+                <MenuItem Header="Liste à _puces" Command="{x:Static c:EditorCommands.BulletList}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Maj+8" />
+                <MenuItem Header="Liste _numérotée" Command="{x:Static c:EditorCommands.NumberedList}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Maj+7" />
+                <MenuItem Header="Case à c_ocher" Command="{x:Static c:EditorCommands.TaskList}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Maj+C" />
+                <MenuItem Header="Ci_tation" Command="{x:Static c:EditorCommands.Quote}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Maj+Q" />
+                <Separator />
+                <MenuItem Header="_Lien" Command="{x:Static c:EditorCommands.Link}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+K" />
+                <MenuItem Header="I_mage" Command="{x:Static c:EditorCommands.Image}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Maj+I" />
+                <MenuItem Header="Bloc de co_de" Command="{x:Static c:EditorCommands.CodeBlock}" CommandTarget="{Binding ElementName=Editor}" InputGestureText="Ctrl+Maj+K" />
+                <MenuItem Header="T_ableau" Command="{x:Static c:EditorCommands.Table}" CommandTarget="{Binding ElementName=Editor}" />
+                <MenuItem Header="Ligne _horizontale" Command="{x:Static c:EditorCommands.HorizontalRule}" CommandTarget="{Binding ElementName=Editor}" />
+            </MenuItem>
+            <MenuItem Header="_Affichage">
+                <MenuItem Header="_Côte à côte" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.SideBySide}" InputGestureText="Ctrl+1"
+                          IsChecked="{Binding Settings.ViewMode, Mode=OneWay, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:ViewMode.SideBySide}}" />
+                <MenuItem Header="_Édition seule" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.EditorOnly}" InputGestureText="Ctrl+2"
+                          IsChecked="{Binding Settings.ViewMode, Mode=OneWay, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:ViewMode.EditorOnly}}" />
+                <MenuItem Header="_Aperçu seul" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static m:ViewMode.PreviewOnly}" InputGestureText="Ctrl+3"
+                          IsChecked="{Binding Settings.ViewMode, Mode=OneWay, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:ViewMode.PreviewOnly}}" />
+                <Separator />
+                <MenuItem Header="Zoom a_vant" Command="{Binding ZoomInCommand}" InputGestureText="Ctrl++" />
+                <MenuItem Header="Zoom a_rrière" Command="{Binding ZoomOutCommand}" InputGestureText="Ctrl+-" />
+                <MenuItem Header="Réinitialiser le _zoom" Command="{Binding ZoomResetCommand}" InputGestureText="Ctrl+0" />
+                <Separator />
+                <MenuItem Header="_Plein écran" Command="{Binding ToggleFullScreenCommand}" InputGestureText="F11" IsChecked="{Binding IsFullScreen, Mode=OneWay}" />
+                <Separator />
+                <MenuItem Header="_Thème">
+                    <MenuItem Header="_Clair" Command="{Binding SetThemeCommand}" CommandParameter="{x:Static m:AppTheme.Light}"
+                              IsChecked="{Binding Settings.Theme, Mode=OneWay, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:AppTheme.Light}}" />
+                    <MenuItem Header="_Sombre" Command="{Binding SetThemeCommand}" CommandParameter="{x:Static m:AppTheme.Dark}"
+                              IsChecked="{Binding Settings.Theme, Mode=OneWay, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:AppTheme.Dark}}" />
+                    <MenuItem Header="S_ystème" Command="{Binding SetThemeCommand}" CommandParameter="{x:Static m:AppTheme.System}"
+                              IsChecked="{Binding Settings.Theme, Mode=OneWay, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:AppTheme.System}}" />
+                </MenuItem>
+                <MenuItem Header="_Retour à la ligne automatique" IsCheckable="True" IsChecked="{Binding Settings.WordWrap}" />
+                <MenuItem Header="_Défilement synchronisé" IsCheckable="True" IsChecked="{Binding Settings.SyncScroll}" />
+                <Separator />
+                <MenuItem Header="Onglet _suivant" Command="{Binding NextTabCommand}" InputGestureText="Ctrl+Tab" />
+                <MenuItem Header="Onglet _précédent" Command="{Binding PreviousTabCommand}" InputGestureText="Ctrl+Maj+Tab" />
+            </MenuItem>
+            <MenuItem Header="_Outils">
+                <MenuItem Header="_Paramètres…" Command="{Binding OpenSettingsCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <ToolBarTray DockPanel.Dock="Top" IsLocked="True">
+            <ToolBar>
+                <Button Command="{Binding NewDocumentCommand}" ToolTip="Nouveau (Ctrl+N)"><TextBlock Style="{StaticResource IconText}" Text="&#xE8A5;" /></Button>
+                <Button Command="{Binding OpenCommand}" ToolTip="Ouvrir (Ctrl+O)"><TextBlock Style="{StaticResource IconText}" Text="&#xE8E5;" /></Button>
+                <Button Command="{Binding SaveCommand}" ToolTip="Enregistrer (Ctrl+S)"><TextBlock Style="{StaticResource IconText}" Text="&#xE74E;" /></Button>
+                <Separator />
+                <Button Command="{x:Static c:EditorCommands.Bold}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Gras (Ctrl+B)"><TextBlock Style="{StaticResource IconText}" Text="&#xE8DD;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.Italic}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Italique (Ctrl+I)"><TextBlock Style="{StaticResource IconText}" Text="&#xE8DB;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.Strikethrough}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Barré (Ctrl+Maj+X)"><TextBlock Style="{StaticResource IconText}" Text="&#xEDE0;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.InlineCode}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Code inline (Ctrl+E)"><TextBlock Style="{StaticResource IconText}" Text="&#xE943;" /></Button>
+                <Separator />
+                <Button Command="{x:Static c:EditorCommands.Heading1}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Titre 1 (Ctrl+Alt+1)"><TextBlock Style="{StaticResource LabelText}" Text="H1" /></Button>
+                <Button Command="{x:Static c:EditorCommands.Heading2}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Titre 2 (Ctrl+Alt+2)"><TextBlock Style="{StaticResource LabelText}" Text="H2" /></Button>
+                <Button Command="{x:Static c:EditorCommands.Heading3}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Titre 3 (Ctrl+Alt+3)"><TextBlock Style="{StaticResource LabelText}" Text="H3" /></Button>
+                <Separator />
+                <Button Command="{x:Static c:EditorCommands.BulletList}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Liste à puces (Ctrl+Maj+8)"><TextBlock Style="{StaticResource IconText}" Text="&#xE8FD;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.NumberedList}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Liste numérotée (Ctrl+Maj+7)"><TextBlock Style="{StaticResource LabelText}" Text="1." /></Button>
+                <Button Command="{x:Static c:EditorCommands.TaskList}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Case à cocher (Ctrl+Maj+C)"><TextBlock Style="{StaticResource IconText}" Text="&#xE9D5;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.Quote}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Citation (Ctrl+Maj+Q)"><TextBlock Style="{StaticResource LabelText}" FontSize="20" Margin="0,4,0,-4" Text="“" /></Button>
+                <Separator />
+                <Button Command="{x:Static c:EditorCommands.Link}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Lien (Ctrl+K)"><TextBlock Style="{StaticResource IconText}" Text="&#xE71B;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.Image}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Image (Ctrl+Maj+I)"><TextBlock Style="{StaticResource IconText}" Text="&#xEB9F;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.CodeBlock}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Bloc de code (Ctrl+Maj+K)"><TextBlock Style="{StaticResource LabelText}" FontFamily="Consolas" Text="```" /></Button>
+                <Button Command="{x:Static c:EditorCommands.Table}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Tableau"><TextBlock Style="{StaticResource IconText}" Text="&#xE80A;" /></Button>
+                <Button Command="{x:Static c:EditorCommands.HorizontalRule}" CommandTarget="{Binding ElementName=Editor}" ToolTip="Ligne horizontale"><TextBlock Style="{StaticResource IconText}" Text="&#xE738;" /></Button>
+            </ToolBar>
+            <ToolBar>
+                <RadioButton GroupName="ViewMode" ToolTip="Côte à côte (Ctrl+1)"
+                             IsChecked="{Binding Settings.ViewMode, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:ViewMode.SideBySide}}">
+                    <TextBlock Style="{StaticResource IconText}" Text="&#xE736;" />
+                </RadioButton>
+                <RadioButton GroupName="ViewMode" ToolTip="Édition seule (Ctrl+2)"
+                             IsChecked="{Binding Settings.ViewMode, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:ViewMode.EditorOnly}}">
+                    <TextBlock Style="{StaticResource IconText}" Text="&#xE70F;" />
+                </RadioButton>
+                <RadioButton GroupName="ViewMode" ToolTip="Aperçu seul (Ctrl+3)"
+                             IsChecked="{Binding Settings.ViewMode, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static m:ViewMode.PreviewOnly}}">
+                    <TextBlock Style="{StaticResource IconText}" Text="&#xE7B3;" />
+                </RadioButton>
+                <Separator />
+                <Button Command="ApplicationCommands.Find" ToolTip="Rechercher (Ctrl+F)"><TextBlock Style="{StaticResource IconText}" Text="&#xE721;" /></Button>
+                <Button Command="{Binding PrintCommand}" ToolTip="Imprimer (Ctrl+P)"><TextBlock Style="{StaticResource IconText}" Text="&#xE749;" /></Button>
+                <Button Command="{Binding OpenSettingsCommand}" ToolTip="Paramètres"><TextBlock Style="{StaticResource IconText}" Text="&#xE713;" /></Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock>
+                    <Run Text="Ln" /> <Run Text="{Binding ActiveDocument.CaretLine, Mode=OneWay}" /><Run Text=", Col" /> <Run Text="{Binding ActiveDocument.CaretColumn, Mode=OneWay}" />
+                </TextBlock>
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock>
+                    <Run Text="{Binding WordCount, Mode=OneWay, StringFormat={}{0:N0}}" /> <Run Text="mots" />
+                </TextBlock>
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock>
+                    <Run Text="{Binding CharCount, Mode=OneWay, StringFormat={}{0:N0}}" /> <Run Text="caractères" />
+                </TextBlock>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right" DockPanel.Dock="Right">
+                <TextBlock Text="{Binding ViewModeLabel}" />
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right" />
+            <StatusBarItem HorizontalAlignment="Right" DockPanel.Dock="Right">
+                <TextBlock Text="{Binding ZoomFactor, StringFormat={}{0:P0}}" ToolTip="Zoom (Ctrl+0 pour réinitialiser)" />
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right" />
+            <StatusBarItem HorizontalAlignment="Right" DockPanel.Dock="Right">
+                <TextBlock Text="{Binding ActiveDocument.LineEndingLabel}" />
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right" />
+            <StatusBarItem HorizontalAlignment="Right" DockPanel.Dock="Right">
+                <TextBlock Text="{Binding ActiveDocument.EncodingName}" />
+            </StatusBarItem>
+            <StatusBarItem />
+        </StatusBar>
+
+        <TabControl x:Name="Tabs" DockPanel.Dock="Top"
+                    ItemsSource="{Binding Documents}"
+                    SelectedItem="{Binding ActiveDocument}">
+            <TabControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:DocumentViewModel}">
+                    <StackPanel Orientation="Horizontal" Background="Transparent" ToolTip="{Binding FilePath}" MouseUp="OnTabHeaderMouseUp">
+                        <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                        <Button Margin="8,0,0,0" Padding="4,2" Focusable="False" ToolTip="Fermer (Ctrl+W)"
+                                Command="{Binding DataContext.CloseDocumentCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                CommandParameter="{Binding}">
+                            <TextBlock Style="{StaticResource IconText}" FontSize="10" Text="&#xE711;" />
+                        </Button>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <!-- The TabControl is only a tab strip: a single editor/preview pair below shows the active document. -->
+            <TabControl.ContentTemplate>
+                <DataTemplate />
+            </TabControl.ContentTemplate>
+        </TabControl>
+
+        <Grid x:Name="PaneGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="EditorColumn" Width="*" />
+                <ColumnDefinition x:Name="SplitterColumn" Width="Auto" />
+                <ColumnDefinition x:Name="PreviewColumn" Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <c:EditorControl x:Name="Editor" Grid.Column="0"
+                             Document="{Binding ActiveDocument.Document}"
+                             CaretLine="{Binding ActiveDocument.CaretLine, Mode=OneWayToSource}"
+                             CaretColumn="{Binding ActiveDocument.CaretColumn, Mode=OneWayToSource}"
+                             WordWrap="{Binding Settings.WordWrap}"
+                             EditorFontFamily="{Binding Settings.EditorFontFamily}"
+                             EditorFontSize="{Binding Settings.EditorFontSize}"
+                             ZoomFactor="{Binding ZoomFactor}"
+                             IsDarkTheme="{Binding IsDarkTheme}" />
+
+            <GridSplitter x:Name="Splitter" Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext" Background="{DynamicResource Brush.Border}"
+                          DragCompleted="OnSplitterDragCompleted" />
+
+            <c:PreviewControl x:Name="Preview" Grid.Column="2"
+                              Html="{Binding PreviewHtml}"
+                              DocumentDirectory="{Binding ActiveDocument.DirectoryPath}"
+                              IsDarkTheme="{Binding IsDarkTheme}"
+                              PreviewFontSize="{Binding Settings.PreviewFontSize}"
+                              ZoomFactor="{Binding ZoomFactor}"
+                              SyncLine="{Binding FirstVisibleLine, ElementName=Editor}"
+                              IsSyncEnabled="{Binding IsScrollSyncActive}"
+                              OpenFileCommand="{Binding OpenFileFromPreviewCommand}" />
+        </Grid>
+    </DockPanel>
+</Window>

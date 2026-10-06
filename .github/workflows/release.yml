@@ -1,0 +1,46 @@
+# Publishes a GitHub release when a version tag is pushed:
+#   git tag v1.1.0
+#   git push origin v1.1.0
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Read version from tag
+        shell: pwsh
+        run: '"VERSION=$("${{ github.ref_name }}".TrimStart("v"))" >> $env:GITHUB_ENV'
+
+      - name: Test
+        run: dotnet test MarkView.sln -c Release
+
+      - name: Publish (self-contained and framework-dependent)
+        run: |
+          dotnet publish src/MarkView -p:PublishProfile=win-x64-self-contained -p:Version=${{ env.VERSION }}
+          dotnet publish src/MarkView -p:PublishProfile=win-x64 -p:Version=${{ env.VERSION }}
+
+      - name: Collect release files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item src/MarkView/bin/publish/win-x64-self-contained/MarkView.exe dist/MarkView.exe
+          Copy-Item src/MarkView/bin/publish/win-x64/MarkView.exe dist/MarkView-light.exe
+          Copy-Item LICENSE.md, THIRD-PARTY-NOTICES.md dist/
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" dist/* --title "MarkView ${{ github.ref_name }}" --generate-notes

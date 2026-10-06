@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Markdown highlighting, light variant (GitHub light palette). Keep the rules in sync with MarkdownDark.xshd. -->
+<SyntaxDefinition name="MarkdownLight" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Heading" foreground="#0550AE" fontWeight="bold" />
+  <Color name="Bold" fontWeight="bold" />
+  <Color name="Italic" fontStyle="italic" />
+  <Color name="BoldItalic" fontWeight="bold" fontStyle="italic" />
+  <Color name="Strikethrough" foreground="#656D76" strikethrough="true" />
+  <Color name="Code" foreground="#953800" />
+  <Color name="Link" foreground="#0969DA" />
+  <Color name="Url" foreground="#57606A" underline="true" />
+  <Color name="List" foreground="#CF222E" fontWeight="bold" />
+  <Color name="TaskBox" foreground="#8250DF" fontWeight="bold" />
+  <Color name="Quote" foreground="#57606A" fontStyle="italic" />
+  <Color name="Rule" foreground="#8C959F" fontWeight="bold" />
+  <Color name="Html" foreground="#116329" />
+  <Color name="Comment" foreground="#6E7781" fontStyle="italic" />
+  <Color name="Table" foreground="#8C959F" />
+
+  <RuleSet name="Inline">
+    <Span color="Comment" multiline="true" begin="&lt;!--" end="--&gt;" />
+    <Rule color="Code">(?&lt;tick&gt;`+)[^`].*?\k&lt;tick&gt;</Rule>
+    <Rule color="BoldItalic">(?&lt;m&gt;\*\*\*|___)(?=\S).+?(?&lt;=\S)\k&lt;m&gt;</Rule>
+    <Rule color="Bold">\*\*(?=\S).+?(?&lt;=\S)\*\*|(?&lt;!\w)__(?=\S).+?(?&lt;=\S)__(?!\w)</Rule>
+    <Rule color="Italic">\*(?=[^\s*])[^*]+?(?&lt;=[^\s*])\*|(?&lt;!\w)_(?=[^\s_])[^_]+?(?&lt;=[^\s_])_(?!\w)</Rule>
+    <Rule color="Strikethrough">~~(?=\S).+?(?&lt;=\S)~~</Rule>
+    <Rule color="Link">!?\[[^\]]*\](?=[(\[])</Rule>
+    <Rule color="Url">(?&lt;=\])(\([^)]*\)|\[[^\]]*\])</Rule>
+    <Rule color="Link">&lt;(https?|ftp|mailto):[^&gt;\s]+&gt;|&lt;[^@\s&lt;&gt;]+@[^@\s&lt;&gt;]+&gt;|\bhttps?://[^\s&lt;&gt;()\[\]]+</Rule>
+    <Rule color="Html">&lt;/?[A-Za-z][A-Za-z0-9-]*(\s[^&lt;&gt;]*)?/?&gt;</Rule>
+    <Rule color="Table">\|</Rule>
+  </RuleSet>
+
+  <RuleSet>
+    <Span color="Code" multiline="true" begin="^[ \t]*```" end="^[ \t]*```" />
+    <Span color="Code" multiline="true" begin="^[ \t]*~~~" end="^[ \t]*~~~" />
+    <Span color="Heading" ruleSet="Inline" begin="^[ ]{0,3}\#{1,6}(?=[ \t]|$)" />
+    <Span color="Quote" ruleSet="Inline" begin="^[ \t]*&gt;" />
+    <Rule color="Rule">^[ ]{0,3}((-[ \t]*){3,}|(\*[ \t]*){3,}|(_[ \t]*){3,}|=+[ \t]*)$</Rule>
+    <Rule color="Table">^[ \t]*\|?[ \t]*:?-+:?[ \t]*(\|[ \t]*:?-+:?[ \t]*)+\|?[ \t]*$</Rule>
+    <Rule color="TaskBox">(?&lt;=^[ \t]*[-*+][ \t]+)\[[ xX]\](?=[ \t]|$)</Rule>
+    <Rule color="List">^[ \t]*([-*+]|\d{1,9}[.)])(?=[ \t]|$)</Rule>
+    <Rule color="Url">^[ ]{0,3}\[[^\]]+\]:[ \t]*\S.*$</Rule>
+    <Import ruleSet="Inline" />
+  </RuleSet>
+</SyntaxDefinition>

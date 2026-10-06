@@ -1,0 +1,86 @@
+<Window x:Class="MarkView.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:MarkView.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+        Title="Paramètres" Width="520" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        FontFamily="{StaticResource Font.UI}" FontSize="13"
+        Background="{DynamicResource Brush.Background}"
+        Foreground="{DynamicResource Brush.Foreground}">
+    <Window.Resources>
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,16,0,8" />
+        </Style>
+        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Margin" Value="0,4" />
+        </Style>
+        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+            <Setter Property="Margin" Value="0,6" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+        <Border DockPanel.Dock="Bottom" Padding="16,12" BorderThickness="0,1,0,0"
+                Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Border}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="OK" MinWidth="96" IsDefault="True" Style="{StaticResource Button.Accent}" Click="OnOkClick" />
+                <Button Content="Annuler" MinWidth="96" Margin="8,0,0,0" IsCancel="True" />
+            </StackPanel>
+        </Border>
+
+        <Grid Margin="24,4,24,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource SectionHeader}" Text="Apparence" />
+            <Label Grid.Row="1" Content="_Thème" Target="{Binding ElementName=ThemeBox}" />
+            <ComboBox x:Name="ThemeBox" Grid.Row="1" Grid.Column="2" ItemsSource="{Binding Themes}"
+                      DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Theme}" />
+            <Label Grid.Row="2" Content="_Mode d'affichage par défaut" Target="{Binding ElementName=ViewModeBox}" />
+            <ComboBox x:Name="ViewModeBox" Grid.Row="2" Grid.Column="2" ItemsSource="{Binding ViewModes}"
+                      DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding ViewMode}" />
+
+            <TextBlock Grid.Row="3" Grid.ColumnSpan="3" Style="{StaticResource SectionHeader}" Text="Éditeur" />
+            <Label Grid.Row="4" Content="_Police de l'éditeur" Target="{Binding ElementName=FontBox}" />
+            <ComboBox x:Name="FontBox" Grid.Row="4" Grid.Column="2" IsEditable="True" ItemsSource="{Binding EditorFonts}"
+                      Text="{Binding EditorFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+            <Label Grid.Row="5" Content="_Taille de police de l'éditeur" Target="{Binding ElementName=EditorSizeBox}" />
+            <ComboBox x:Name="EditorSizeBox" Grid.Row="5" Grid.Column="2" Width="100" HorizontalAlignment="Left" IsEditable="True"
+                      ItemsSource="{Binding FontSizes}" Text="{Binding EditorFontSize, UpdateSourceTrigger=PropertyChanged}" />
+            <CheckBox Grid.Row="6" Grid.Column="2" Content="_Retour à la ligne automatique" IsChecked="{Binding WordWrap}" />
+
+            <TextBlock Grid.Row="7" Grid.ColumnSpan="3" Style="{StaticResource SectionHeader}" Text="Aperçu" />
+            <Label Grid.Row="8" Content="Taille de police de l'_aperçu" Target="{Binding ElementName=PreviewSizeBox}" />
+            <ComboBox x:Name="PreviewSizeBox" Grid.Row="8" Grid.Column="2" Width="100" HorizontalAlignment="Left" IsEditable="True"
+                      ItemsSource="{Binding FontSizes}" Text="{Binding PreviewFontSize, UpdateSourceTrigger=PropertyChanged}" />
+            <CheckBox Grid.Row="9" Grid.Column="2" Content="_Défilement synchronisé" IsChecked="{Binding SyncScroll}" />
+
+            <TextBlock Grid.Row="10" Grid.ColumnSpan="3" Style="{StaticResource SectionHeader}" Text="Export" />
+            <CheckBox Grid.Row="11" Grid.ColumnSpan="3" Content="_Intégrer les images en base64 lors de l'export HTML"
+                      IsChecked="{Binding ExportEmbedImages}" />
+        </Grid>
+    </DockPanel>
+</Window>
